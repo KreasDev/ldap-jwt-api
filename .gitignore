@@ -1,0 +1,17 @@
+# Local environment (contains JWT_SECRET)
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Logs
+*.log
+
+# macOS archive leftovers
+__MACOSX/
+.DS_Store
