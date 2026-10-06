@@ -1,0 +1,51 @@
+[DEFAULT]
+# Ban the source on all ports of THIS container only (proven in the lab).
+banaction = iptables-allports
+# Only loopback is ignored. The Docker gateway IP that the host appears as is
+# intentionally NOT ignored, so a ban can be demonstrated from the host.
+ignoreip  = 127.0.0.1/8
+usedns    = no
+
+# Nginx writes regular files here; polling notices appended lines on Alpine
+# without journald.
+backend = polling
+
+# Escalate repeat offenders, hard ceiling one day.
+bantime = 10m
+bantime.increment = true
+bantime.factor = 2
+bantime.maxtime = 1d
+
+# This image is not an SSH server; disable the distro default jails.
+[sshd]
+enabled = false
+
+[sshd-ddos]
+enabled = false
+
+[http-frontend]
+enabled  = true
+port     = http,https
+filter   = http-flood
+logpath  = /var/log/nginx/frontend_access.log
+maxretry = 100
+findtime = 10s
+bantime  = 10m
+
+[http-backend]
+enabled  = true
+port     = http,https
+filter   = http-flood
+logpath  = /var/log/nginx/backend_access.log
+maxretry = 60
+findtime = 10s
+bantime  = 10m
+
+[http-fastapi]
+enabled  = true
+port     = http,https
+filter   = http-flood
+logpath  = /var/log/nginx/fastapi_access.log
+maxretry = 40
+findtime = 10s
+bantime  = 10m

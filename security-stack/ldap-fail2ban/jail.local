@@ -1,0 +1,22 @@
+[DEFAULT]
+# Ban on all ports of the shared (openldap) network namespace.
+banaction = iptables-allports
+# Only loopback is ignored, so a ban can be demonstrated from the app network.
+ignoreip  = 127.0.0.1/8
+usedns    = no
+# slapd writes a regular file; poll it (no journald in this sidecar).
+backend   = polling
+
+# This sidecar is not an SSH server; disable the distro default jail.
+[sshd]
+enabled = false
+
+[ldap-auth]
+enabled  = true
+port     = 389,636
+protocol = tcp
+filter   = ldap-auth
+logpath  = /var/log/slapd/slapd.log
+maxretry = 5
+findtime = 120
+bantime  = 1800

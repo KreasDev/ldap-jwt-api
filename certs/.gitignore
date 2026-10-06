@@ -1,0 +1,8 @@
+# Generated lab TLS material — regenerate with generate-certs.sh, never commit.
+# Private keys especially must never be pushed.
+*.key
+*.crt
+*.srl
+
+# dhparam.pem (public DH parameters) and the generator script ARE committed:
+!generate-certs.sh

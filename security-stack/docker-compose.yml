@@ -1,0 +1,113 @@
+# Local integration stack: the three HTTP services sit behind one nginx reverse
+# proxy that runs Fail2Ban. Only the proxy publishes ports to the host; the real
+# services are reachable only on the internal Docker network by service name.
+#
+# NOT committed/pushed. JWT_SECRET here is a throwaway lab value, never a real
+# secret, and is set via environment (not baked into any Dockerfile).
+
+services:
+  frontend:
+    build:
+      context: ../../dashboard-videojuegos-frontend
+      args:
+        # Browser-reachable URLs (through the proxy), baked at Vite build time.
+        VITE_LDAP_API_URL: http://localhost:8000
+        VITE_BACKEND_API_URL: http://localhost:3000
+    image: dashboard-videojuegos-frontend:stack
+    container_name: dvj-frontend
+    expose:
+      - "80"
+    networks: [appnet]
+
+  backend:
+    build:
+      context: ../../dashboard-videojuegos-backend
+    image: dashboard-videojuegos-backend:stack
+    container_name: dvj-backend
+    environment:
+      PORT: "3000"
+      # CORS origin = where the browser loads the SPA from (proxy host port).
+      FRONTEND_ORIGIN: "http://localhost:5173"
+    expose:
+      - "3000"
+    networks: [appnet]
+
+  openldap:
+    image: osixia/openldap:1.5.0
+    container_name: dvj-openldap
+    environment:
+      LDAP_ORGANISATION: "Example Corp"
+      LDAP_DOMAIN: "example.com"
+      LDAP_ADMIN_PASSWORD: "adminpassword"
+      # Do not require a client certificate (lab).
+      LDAP_TLS_VERIFY_CLIENT: "try"
+    volumes:
+      # Fresh lab certs (the image's bundled CA expired 2026-01-15).
+      # Not read-only: osixia chowns this dir at startup (no-op on Windows binds).
+      - ../certs:/container/service/slapd/assets/certs
+      # Shared file where slapd writes bind results, read by the fail2ban sidecar.
+      - ldap_logs:/var/log/slapd
+    expose:
+      - "389"
+      - "636"
+    networks: [appnet]
+
+  # Fail2Ban for LDAP/LDAPS. Shares openldap's network namespace so its iptables
+  # bans apply exactly where 389/636 traffic arrives. Reads slapd's log from the
+  # shared ldap_logs volume.
+  ldap-fail2ban:
+    build:
+      context: ./ldap-fail2ban
+    image: ldap-fail2ban:stack
+    container_name: dvj-ldap-fail2ban
+    network_mode: "service:openldap"
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ldap_logs:/var/log/slapd:ro
+    depends_on:
+      - openldap
+
+  api:
+    build:
+      context: ../fastapi
+    image: ldap-jwt-api:stack
+    container_name: dvj-api
+    environment:
+      LDAP_HOST: openldap
+      LDAP_PORT: "389"
+      LDAP_BASE_DN: "dc=example,dc=com"
+      # Lab-only throwaway value so the API boots for this phase's validation.
+      JWT_SECRET: "lab-only-not-a-real-secret-change-me"
+    depends_on:
+      - openldap
+    expose:
+      - "8000"
+    networks: [appnet]
+
+  proxy:
+    build:
+      context: ./proxy
+    image: dvj-proxy:stack
+    container_name: dvj-proxy
+    # Needed so Fail2Ban can insert iptables rules in the proxy's own netns.
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    ports:
+      - "5173:5173"   # host -> proxy -> frontend:80
+      - "3000:3000"   # host -> proxy -> backend:3000
+      - "8000:8000"   # host -> proxy -> api:8000
+    depends_on:
+      - frontend
+      - backend
+      - api
+    networks: [appnet]
+
+volumes:
+  ldap_logs:
+
+networks:
+  appnet:
+    driver: bridge

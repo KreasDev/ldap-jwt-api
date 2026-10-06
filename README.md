@@ -278,3 +278,115 @@ LDAP on port 389 is unencrypted and should not be used for production
 authentication across an untrusted network. The next exercise can configure
 LDAPS on port 636, certificate validation, and packet inspection with
 Wireshark.
+
+## Protección Fail2Ban
+
+Esta sección añade protección con Fail2Ban para los tres servicios HTTP del
+dashboard y una protección adicional para LDAP/LDAPS (636). Toda la
+infraestructura vive en [`security-stack/`](security-stack/) dentro de este repo.
+
+### Arquitectura
+
+```
+Host (navegador / PowerShell)
+  :5173 ─┐
+  :3000 ─┤─▶  dvj-proxy  (nginx + fail2ban)           ─▶ frontend:80
+  :8000 ─┘     http-frontend / http-backend / http-fastapi ─▶ backend:3000 / api:8000
+                                                        │
+dvj-ldap-fail2ban (jail ldap-auth, comparte netns de openldap) ─▶ openldap:389/636
+```
+
+- Un único **proxy nginx con Fail2Ban** es el punto de entrada HTTP; escribe un
+  `access.log` por servicio y cada uno tiene su jail.
+- OpenLDAP no se publica al host; el tráfico LDAP es interno (API→LDAP). El
+  **sidecar `dvj-ldap-fail2ban`** comparte el *network namespace* de openldap, así
+  sus baneos `iptables` se aplican justo donde llega el tráfico 389/636.
+- FastAPI sigue usando LDAP plano en 389 (sin cambios); 636 es LDAPS.
+
+### Puertos
+
+| Host | Proxy | Upstream interno | Jail |
+|------|-------|------------------|------|
+| 5173 | 5173  | frontend:80      | `http-frontend` (maxretry 100 / 10s) |
+| 3000 | 3000  | backend:3000     | `http-backend` (maxretry 60 / 10s) |
+| 8000 | 8000  | api:8000         | `http-fastapi` (maxretry 40 / 10s) |
+| —    | —     | openldap:389/636 | `ldap-auth` (maxretry 5 / 120s, bantime 1800s) |
+
+### HTTP Fail2Ban
+
+Filtro común `proxy/filter-http-flood.conf` (reusado del material del profesor):
+cuenta peticiones HTTP completas por IP; `proxy/jail.local` aplica el umbral.
+`banaction = iptables-allports`, `backend = polling`, `usedns = no`.
+
+### LDAP/LDAPS Fail2Ban
+
+`ldap-fail2ban/ldap-auth.conf` es un filtro **multilínea** que correlaciona por
+`conn=` la IP de la línea `ACCEPT` con un `RESULT ... err=49` de esa misma
+conexión, de modo que **nunca cuenta binds exitosos**. Lee
+`/var/log/slapd/slapd.log` (volumen `ldap_logs`).
+
+### Docker Desktop / WSL2
+
+Los baneos `iptables` funcionan **dentro** del namespace de red de cada
+contenedor con `cap_add: NET_ADMIN, NET_RAW` (no tocan el firewall de Windows).
+La IP del host, vista dentro de Docker, es la gateway del bridge (p. ej.
+`172.25.0.1`), no `127.0.0.1`.
+
+### Cómo levantar el stack (PowerShell)
+
+```powershell
+# Requisitos: los 3 repos como carpetas hermanas; Docker Desktop en ejecución.
+bash security-stack/../certs/generate-certs.sh   # certs de laboratorio, una vez
+cd security-stack
+docker compose up -d --build openldap
+bash ldap-fail2ban/enable-ldap-logging.sh         # habilita el log LDAP
+docker compose up -d --build
+docker compose ps
+```
+
+### Cómo habilitar logs LDAP
+
+`olcLogFile` vive en `cn=config`, que osixia mantiene en una capa efímera, por lo
+que debe aplicarse tras cada (re)creación de `dvj-openldap`:
+
+```powershell
+bash security-stack/ldap-fail2ban/enable-ldap-logging.sh
+```
+
+El script hace writable `/var/log/slapd`, fija `olcLogFile=/var/log/slapd/slapd.log`
+y `olcLogLevel=stats`.
+
+### Validación
+
+```powershell
+docker compose ps
+docker exec dvj-proxy fail2ban-client status
+docker exec dvj-proxy fail2ban-client status http-frontend
+docker exec dvj-proxy fail2ban-client status http-backend
+docker exec dvj-proxy fail2ban-client status http-fastapi
+docker exec dvj-ldap-fail2ban fail2ban-client status ldap-auth
+```
+
+Health HTTP (deben dar 200):
+
+```powershell
+curl.exe -s -o NUL -w "%{http_code}`n" http://127.0.0.1:5173/
+curl.exe -s -o NUL -w "%{http_code}`n" http://127.0.0.1:3000/api/health
+curl.exe -s -o NUL -w "%{http_code}`n" http://127.0.0.1:8000/health
+```
+
+### Cómo comprobar TLS 636
+
+```powershell
+docker exec dvj-openldap sh -c "echo | openssl s_client -connect openldap:636 -brief"
+docker exec dvj-api python -c "import ssl; from ldap3 import Server,Connection,Tls; s=Server('openldap',636,use_ssl=True,tls=Tls(validate=ssl.CERT_NONE)); print(Connection(s,user='cn=admin,dc=example,dc=com',password='adminpassword').bind())"
+```
+
+### Cómo detenerlo
+
+```powershell
+cd security-stack
+docker compose down          # conserva volúmenes/datos
+```
+
+No usar `docker compose down -v` salvo que se quieran borrar los datos LDAP.
