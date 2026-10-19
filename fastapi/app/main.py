@@ -2,7 +2,7 @@ import os
 from datetime import datetime, timedelta, timezone
 
 import jwt
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from ldap3 import Server, Connection, ALL
@@ -42,6 +42,20 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type"],
 )
+
+# HTTP security headers. The API only returns JSON, so strict values are safe.
+SECURITY_HEADERS = {
+    "Cross-Origin-Opener-Policy": "same-origin",
+}
+
+
+# Registered after CORSMiddleware, so it is the outermost layer and also
+# covers CORS preflight and error responses.
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers.update(SECURITY_HEADERS)
+    return response
 
 
 class LoginRequest(BaseModel):
