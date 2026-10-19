@@ -33,6 +33,7 @@ app = FastAPI(
     version="1.1.0",
     docs_url="/docs" if API_DOCS_ENABLED else None,
     redoc_url="/redoc" if API_DOCS_ENABLED else None,
+    openapi_url="/openapi.json" if API_DOCS_ENABLED else None,
 )
 
 app.add_middleware(
