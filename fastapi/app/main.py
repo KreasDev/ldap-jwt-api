@@ -51,6 +51,7 @@ SECURITY_HEADERS = {
     "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
     "X-Frame-Options": "DENY",
     "X-Permitted-Cross-Domain-Policies": "none",
+    "Referrer-Policy": "no-referrer",
 }
 
 
