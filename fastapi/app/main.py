@@ -23,10 +23,15 @@ JWT_EXPIRATION = timedelta(hours=1)
 # Frontend allowed to call this API from the browser (Vite dev server).
 CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
 
+# The interactive docs expose the whole API surface; keep them disabled unless
+# explicitly enabled for local development (API_DOCS_ENABLED=true).
+API_DOCS_ENABLED = os.getenv("API_DOCS_ENABLED", "false").strip().lower() == "true"
+
 app = FastAPI(
     title="LDAP Authentication API",
     description="Educational FastAPI + OpenLDAP example",
     version="1.1.0",
+    docs_url="/docs" if API_DOCS_ENABLED else None,
 )
 
 app.add_middleware(

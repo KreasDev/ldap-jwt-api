@@ -1,0 +1,23 @@
+time="2026-10-19T08:51:46-06:00" level=warning msg="Found orphan containers (juice-shop-lab) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+ Container archive2-nuclei-run-546d3979c950 Creating 
+ Container archive2-nuclei-run-546d3979c950 Created 
+
+                     __     _
+   ____  __  _______/ /__  (_)
+  / __ \/ / / / ___/ / _ \/ /
+ / / / / /_/ / /__/ /  __/ /
+/_/ /_/\__,_/\___/_/\___/_/   v3.11.1
+
+		projectdiscovery.io
+
+[INF] Your current nuclei-templates  are outdated. Latest is v10.5.0
+[INF] Current nuclei version: v3.11.1 (latest)
+[INF] Current nuclei-templates version:  (outdated)
+[INF] New templates added in latest release: 295
+[INF] Templates loaded for current scan: 3
+[INF] Executing 3 signed templates from projectdiscovery/nuclei-templates
+[INF] Targets loaded for current scan: 1
+[openapi] [http] [info] http://api:8000/openapi.json
+[redoc-api-docs] [http] [info] http://api:8000/redoc
+[INF] Scan completed in 729.063569ms. 2 matches found.
+[INF] HTTP connections: 66 total, 27 new, 39 reused (59.1%)
