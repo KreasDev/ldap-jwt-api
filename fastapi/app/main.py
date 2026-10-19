@@ -32,6 +32,7 @@ app = FastAPI(
     description="Educational FastAPI + OpenLDAP example",
     version="1.1.0",
     docs_url="/docs" if API_DOCS_ENABLED else None,
+    redoc_url="/redoc" if API_DOCS_ENABLED else None,
 )
 
 app.add_middleware(
