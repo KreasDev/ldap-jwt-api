@@ -1,0 +1,32 @@
+time="2026-10-19T09:22:42-06:00" level=warning msg="Found orphan containers (juice-shop-lab) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+ Container archive2-nuclei-run-28b78cbefa6e Creating 
+ Container archive2-nuclei-run-28b78cbefa6e Created 
+
+                     __     _
+   ____  __  _______/ /__  (_)
+  / __ \/ / / / ___/ / _ \/ /
+ / / / / /_/ / /__/ /  __/ /
+/_/ /_/\__,_/\___/_/\___/_/   v3.11.1
+
+		projectdiscovery.io
+
+[INF] Your current nuclei-templates  are outdated. Latest is v10.5.0
+[INF] Current nuclei version: v3.11.1 (latest)
+[INF] Current nuclei-templates version:  (outdated)
+[INF] New templates added in latest release: 295
+[INF] Templates loaded for current scan: 10160
+[INF] Executing 10160 signed templates from projectdiscovery/nuclei-templates
+[INF] Targets loaded for current scan: 1
+[INF] Templates clustered: 2703 (Reduced 2567 Requests)
+[0:01:00] | Templates: 10160 | Hosts: 1 | RPS: 65 | Matched: 0 | Errors: 15 | Requests: 3967/17486 (22%)
+[0:02:00] | Templates: 10160 | Hosts: 1 | RPS: 68 | Matched: 0 | Errors: 23 | Requests: 8182/17486 (46%)
+[0:03:00] | Templates: 10160 | Hosts: 1 | RPS: 61 | Matched: 0 | Errors: 36 | Requests: 11152/17486 (63%)
+[INF] Skipped api:5814 from target list as found unresponsive permanently: Get "https://api:5814/autopass": cause="port closed or filtered" address=api:5814 chain="connection refused"
+[0:04:00] | Templates: 10160 | Hosts: 1 | RPS: 53 | Matched: 0 | Errors: 79 | Requests: 12897/17486 (73%)
+[0:05:00] | Templates: 10160 | Hosts: 1 | RPS: 53 | Matched: 0 | Errors: 89 | Requests: 15953/17486 (91%)
+[INF] Skipped api:4040 from target list as found unresponsive permanently: cause="port closed or filtered" address=api:4040 chain="connection refused; got err while executing https://api:4040/jobs/?\"'><script>alert(document.domain)</script>"
+[0:05:35] | Templates: 10160 | Hosts: 1 | RPS: 51 | Matched: 0 | Errors: 238 | Requests: 17436/17486 (99%)
+[INF] Scan completed in 5m. 0 matches found.
+[INF] HTTP connections: 11701 total, 3631 new, 8070 reused (69.0%)
+[0:05:35] | Templates: 10160 | Hosts: 1 | RPS: 51 | Matched: 0 | Errors: 238 | Requests: 17436/17486 (99%)
+NUCLEI_EXIT=0
