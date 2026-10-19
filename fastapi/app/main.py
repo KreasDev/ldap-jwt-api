@@ -46,6 +46,7 @@ app.add_middleware(
 # HTTP security headers. The API only returns JSON, so strict values are safe.
 SECURITY_HEADERS = {
     "Cross-Origin-Opener-Policy": "same-origin",
+    "Cross-Origin-Resource-Policy": "same-site",
 }
 
 

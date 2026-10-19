@@ -1,0 +1,29 @@
+time="2026-10-19T08:56:32-06:00" level=warning msg="Found orphan containers (juice-shop-lab) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up."
+ Container archive2-nuclei-run-b06b9089edcc Creating 
+ Container archive2-nuclei-run-b06b9089edcc Created 
+
+                     __     _
+   ____  __  _______/ /__  (_)
+  / __ \/ / / / ___/ / _ \/ /
+ / / / / /_/ / /__/ /  __/ /
+/_/ /_/\__,_/\___/_/\___/_/   v3.11.1
+
+		projectdiscovery.io
+
+[INF] Your current nuclei-templates  are outdated. Latest is v10.5.0
+[INF] Current nuclei version: v3.11.1 (latest)
+[INF] Current nuclei-templates version:  (outdated)
+[INF] New templates added in latest release: 295
+[INF] Templates loaded for current scan: 1
+[INF] Executing 1 signed templates from projectdiscovery/nuclei-templates
+[INF] Targets loaded for current scan: 1
+[http-missing-security-headers:permissions-policy] [http] [info] http://api:8000
+[http-missing-security-headers:x-frame-options] [http] [info] http://api:8000
+[http-missing-security-headers:x-content-type-options] [http] [info] http://api:8000
+[http-missing-security-headers:x-permitted-cross-domain-policies] [http] [info] http://api:8000
+[http-missing-security-headers:referrer-policy] [http] [info] http://api:8000
+[http-missing-security-headers:cross-origin-embedder-policy] [http] [info] http://api:8000
+[http-missing-security-headers:strict-transport-security] [http] [info] http://api:8000
+[http-missing-security-headers:content-security-policy] [http] [info] http://api:8000
+[INF] Scan completed in 706.126937ms. 8 matches found.
+[INF] HTTP connections: 1 total, 1 new, 0 reused (0.0%)
