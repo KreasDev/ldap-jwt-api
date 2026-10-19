@@ -52,6 +52,7 @@ SECURITY_HEADERS = {
     "X-Frame-Options": "DENY",
     "X-Permitted-Cross-Domain-Policies": "none",
     "Referrer-Policy": "no-referrer",
+    "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'",
 }
 
 
