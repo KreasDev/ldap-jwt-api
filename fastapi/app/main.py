@@ -54,6 +54,7 @@ SECURITY_HEADERS = {
     "Referrer-Policy": "no-referrer",
     "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'",
     "X-Content-Type-Options": "nosniff",
+    "Cross-Origin-Embedder-Policy": "require-corp",
 }
 
 
